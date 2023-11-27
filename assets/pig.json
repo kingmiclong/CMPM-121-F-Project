@@ -1,0 +1,95 @@
+{
+  "frames": {
+    "pig0.png": {
+      "frame": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig1.png": {
+      "frame": { "x": 40, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig2.png": {
+      "frame": { "x": 80, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig3.png": {
+      "frame": { "x": 120, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig4.png": {
+      "frame": { "x": 160, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig5.png": {
+      "frame": { "x": 200, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig6.png": {
+      "frame": { "x": 240, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig7.png": {
+      "frame": { "x": 280, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig8.png": {
+      "frame": { "x": 320, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig9.png": {
+      "frame": { "x": 360, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig10.png": {
+      "frame": { "x": 400, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    },
+    "pig11.png": {
+      "frame": { "x": 440, "y": 0, "w": 40, "h": 34 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 34 },
+      "sourceSize": { "w": 40, "h": 34 }
+    }
+  },
+  "meta": {
+    "app": "https://github.com/piskelapp/piskel/",
+    "version": "1.0",
+    "image": "pig.png",
+    "format": "RGBA8888",
+    "size": { "w": 480, "h": 34 }
+  }
+}

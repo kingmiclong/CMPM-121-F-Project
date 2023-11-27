@@ -1,19 +1,26 @@
-import Phaser from 'phaser'
-
-import HelloWorldScene from './HelloWorldScene'
-
-const config = {
+let config = {
 	type: Phaser.AUTO,
-	parent: 'app',
-	width: 800,
-	height: 600,
-	physics: {
-		default: 'arcade',
-		arcade: {
-			gravity: { y: 200 },
-		},
-	},
-	scene: [HelloWorldScene],
-}
+    width: 1280,
+    height: 720,
+    backgroundColor: '#8e9490',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: false,
+            gravity: {
+                x: 0,
+                y: 0
+            }
+        }
+  },
+  scene: [Load, Play]
+};
 
-export default new Phaser.Game(config)
+
+let game = new Phaser.Game(config);
+
+// Keyboard Inputs
+let keyW, keyA, keyS, keyD;
+
+// Game Pointer
+let gamePointer;
