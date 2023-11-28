@@ -156,6 +156,61 @@
          "spacing":0,
          "tilecount":144,
          "tileheight":16,
+         "tiles":[
+                {
+                 "id":6,
+                 "properties":[
+                        {
+                         "name":"plantable",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":7,
+                 "properties":[
+                        {
+                         "name":"plantable",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":8,
+                 "properties":[
+                        {
+                         "name":"plantable",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":24,
+                 "properties":[
+                        {
+                         "name":"plantable",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":25,
+                 "properties":[
+                        {
+                         "name":"plantable",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":26,
+                 "properties":[
+                        {
+                         "name":"plantable",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }],
          "tilewidth":16
         }],
  "tilewidth":16,

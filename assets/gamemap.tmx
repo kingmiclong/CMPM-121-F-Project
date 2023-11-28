@@ -5,6 +5,36 @@
  </editorsettings>
  <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16" tilecount="144" columns="18">
   <image source="C:/Users/a3020/Downloads/tiles.png" width="288" height="128"/>
+  <tile id="6">
+   <properties>
+    <property name="plantable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="7">
+   <properties>
+    <property name="plantable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="plantable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="24">
+   <properties>
+    <property name="plantable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="25">
+   <properties>
+    <property name="plantable" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="26">
+   <properties>
+    <property name="plantable" type="bool" value="true"/>
+   </properties>
+  </tile>
  </tileset>
  <layer id="4" name="Behind" width="30" height="20">
   <data encoding="csv">
