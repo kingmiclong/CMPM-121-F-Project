@@ -1,12 +1,15 @@
 class Play extends Phaser.Scene {
   constructor() {
     super("playScene");
+    this.actionCount = 0;
+    this.actionsPerTurn = 10; // Number of actions per turn
+    this.currentTurn = 1; // Current turn number
   }
 
   preload() {
-        this.load.path = "./assets/";
-        //Load characters
-        this.load.atlas("pig", "pig.png", "pig.json");
+    this.load.path = "./assets/";
+    //Load characters
+    this.load.atlas("pig", "pig.png", "pig.json");
   }
 
   create() {
@@ -25,6 +28,16 @@ class Play extends Phaser.Scene {
 
     // Set up collisions
     this.wallsLayer.setCollisionByProperty({ collides: true });
+
+    // Create text elements for turn number and action counter with corrected style
+    this.turnText = this.add.text(10, 10, "Turn: 1", {
+      fontSize: "16px",
+      color: "#FFFFFF",
+    });
+    this.actionText = this.add.text(10, 30, "Actions Left: 10", {
+      fontSize: "16px",
+      color: "#FFFFFF",
+    });
 
     // Create the pig sprite and add it to the scene
     this.player = this.physics.add.sprite(100, 100, "pig", "pig0.png");
@@ -53,11 +66,11 @@ class Play extends Phaser.Scene {
     this.gridSize = 16;
 
     // Prevents diagonal movement and allows for grid-based movement
-    this.input.keyboard.on('keydown', this.handleKeyDown, this);
+    this.input.keyboard.on("keydown", this.handleKeyDown, this);
   }
 
-createAnimations(){
-    // pig animation 
+  createAnimations() {
+    // pig animation
     this.anims.create({
       key: "walkRight",
       frames: this.anims.generateFrameNames("pig", {
@@ -106,52 +119,99 @@ createAnimations(){
       frameRate: 10,
       repeat: -1,
     });
-
   }
-  update() {
-  }
+  update() {}
 
   handleKeyDown(event) {
     if (!this.player.body.velocity.equals(new Phaser.Math.Vector2())) {
-      // while we moving , ignore player spaming
+      // Skip if already moving
       return;
     }
-    
-    // Player movement and animation based on grid
-    switch(event.code) {
-      case 'ArrowLeft':
-        if (this.canMoveTo(this.player.x - this.gridSize, this.player.y)) {
-          this.player.x -= this.gridSize;
-          this.player.anims.play('walkLeft', true);
-        }
+
+    let targetX = this.player.x;
+    let targetY = this.player.y;
+
+    switch (event.code) {
+      case "ArrowLeft":
+        targetX -= this.gridSize;
+        this.player.anims.play("walkLeft", true);
         break;
-      case 'ArrowRight':
-        if (this.canMoveTo(this.player.x + this.gridSize, this.player.y)) {
-          this.player.x += this.gridSize;
-          this.player.anims.play('walkRight', true);
-        }
+      case "ArrowRight":
+        targetX += this.gridSize;
+        this.player.anims.play("walkRight", true);
         break;
-      case 'ArrowUp':
-        if (this.canMoveTo(this.player.x, this.player.y - this.gridSize)) {
-          this.player.y -= this.gridSize;
-          this.player.anims.play('walkUp', true);
-        }
+      case "ArrowUp":
+        targetY -= this.gridSize;
+        this.player.anims.play("walkUp", true);
         break;
-      case 'ArrowDown':
-        if (this.canMoveTo(this.player.x, this.player.y + this.gridSize)) {
-          this.player.y += this.gridSize;
-          this.player.anims.play('walkDown', true);
-        }
+      case "ArrowDown":
+        targetY += this.gridSize;
+        this.player.anims.play("walkDown", true);
         break;
+    }
+
+    if (this.canMoveTo(targetX, targetY)) {
+      this.tweens.add({
+        targets: this.player,
+        x: targetX,
+        y: targetY,
+        ease: "Linear",
+        duration: 200, // Duration of the movement in milliseconds
+        onComplete: () => {
+          this.player.anims.stop(); // Stop animation when movement is complete
+          this.actionTaken(); // Call this method when an action is completed
+        },
+      });
     }
   }
 
+  // Position record
   canMoveTo(x, y) {
     // Check if the new x, y position in the world
-    return x >= 0 && x <= this.physics.world.bounds.width &&
-           y >= 0 && y <= this.physics.world.bounds.height &&
-           !this.wallsLayer.getTileAtWorldXY(x, y);
+    return (
+      x >= 0 &&
+      x <= this.physics.world.bounds.width &&
+      y >= 0 &&
+      y <= this.physics.world.bounds.height &&
+      !this.wallsLayer.getTileAtWorldXY(x, y)
+    );
   }
 
+  // Action counting
+  actionTaken() {
+    this.actionCount++;
+    this.actionText.setText(
+      "Actions Left: " + (this.actionsPerTurn - this.actionCount)
+    );
 
+    if (this.actionCount >= this.actionsPerTurn) {
+      this.endTurn();
+    }
+  }
+
+  // End Turn and update Environment and update Plant
+  endTurn() {
+    // Increase turn number and reset the action count
+    this.currentTurn++;
+    this.actionCount = 0;
+
+    // Update text elements
+    this.turnText.setText("Turn: " + this.currentTurn);
+    this.actionText.setText("Actions Left: " + this.actionsPerTurn);
+
+    // Update game state for the new turn
+    this.updateEnvironment();
+    this.updatePlants();
+
+    // Log the end of the turn for debugging
+    console.log("Turn ended");
+  }
+
+  updateEnvironment() {
+    // ... logic to update environmental factors ...
+  }
+
+  updatePlants() {
+    // ... logic to update plants ...
+  }
 }
