@@ -7,7 +7,7 @@
 
 ## Tools and materials
 - Framework: Phaser
-- Engine: 
+- Engine: N/A
 - Library: Nodes, jQuery
 - Languages: TypeScript/Javascript
 - IDE: Visual Studio Code
