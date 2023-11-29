@@ -25,6 +25,7 @@ class Plant {
         this.growthStage = 0;
         this.isReadyToHarvest = false;
         this.sprite.setFrame(this.getFrameForSpecies(this.species, this.growthStage));
+        console.log("Plant reset to seed stage.");
     }
 
     getFrameForSpecies(species, growthStage) {
