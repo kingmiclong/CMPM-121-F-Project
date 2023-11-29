@@ -21,7 +21,10 @@ class Plant {
     }
 
     harvest() {
-        this.sprite.destroy();
+        // Reset the growth again
+        this.growthStage = 0;
+        this.isReadyToHarvest = false;
+        this.sprite.setFrame(this.getFrameForSpecies(this.species, this.growthStage));
     }
 
     getFrameForSpecies(species, growthStage) {

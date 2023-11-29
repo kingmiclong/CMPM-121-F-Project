@@ -76,6 +76,23 @@ class Play extends Phaser.Scene {
 
     // Prevents diagonal movement and allows for grid-based movement
     this.input.keyboard.on("keydown", this.handleKeyDown, this);
+
+    // Animations create for plants
+    this.anims.create({
+      key: 'growPotato',
+      frames: this.anims.generateFrameNumbers('plants', { start: 0, end: 3 }),
+      frameRate: 10,
+    });
+    this.anims.create({
+      key: 'growTomato',
+      frames: this.anims.generateFrameNumbers('plants', { start: 4, end: 7 }),
+      frameRate: 10,
+    });
+    this.anims.create({
+      key: 'growEggplant',
+      frames: this.anims.generateFrameNumbers('plants', { start: 8, end: 11 }),
+      frameRate: 10,
+    });
   }
 
   createAnimations() {
@@ -130,63 +147,62 @@ class Play extends Phaser.Scene {
     });
   }
 
-  // Event Handler - Key Pressing
+  // Event Handler - Key Pressing     (bug fix change)
   handleKeyDown(event) {
-    if (!this.player.body.velocity.equals(new Phaser.Math.Vector2())) {
-      // Skip if already moving
-      return;
+    if (this.player.body.velocity.equals(new Phaser.Math.Vector2())) {
+        let targetX = this.player.x;
+        let targetY = this.player.y;
+
+        switch (event.code) {
+            case "ArrowLeft":
+                targetX -= this.gridSize;
+                this.player.anims.play("walkLeft", true);
+                break;
+            case "ArrowRight":
+                targetX += this.gridSize;
+                this.player.anims.play("walkRight", true);
+                break;
+            case "ArrowUp":
+                targetY -= this.gridSize;
+                this.player.anims.play("walkUp", true);
+                break;
+            case "ArrowDown":
+                targetY += this.gridSize;
+                this.player.anims.play("walkDown", true);
+                break;
+        }
+
+        if (this.canMoveTo(targetX, targetY)) {
+            this.tweens.add({
+                targets: this.player,
+                x: targetX,
+                y: targetY,
+                ease: "Linear",
+                duration: 200,
+                onComplete: () => {
+                    this.player.anims.stop();
+                    // Only call actionTaken here if a move action is completed
+                    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.code)) {
+                        this.actionTaken();
+                    }
+                },
+            });
+        }
     }
 
-    let targetX = this.player.x;
-    let targetY = this.player.y;
-
-    switch (event.code) {
-      case "ArrowLeft":
-        targetX -= this.gridSize;
-        this.player.anims.play("walkLeft", true);
-        break;
-      case "ArrowRight":
-        targetX += this.gridSize;
-        this.player.anims.play("walkRight", true);
-        break;
-      case "ArrowUp":
-        targetY -= this.gridSize;
-        this.player.anims.play("walkUp", true);
-        break;
-      case "ArrowDown":
-        targetY += this.gridSize;
-        this.player.anims.play("walkDown", true);
-        break;
-    }
-
-    if (this.canMoveTo(targetX, targetY)) {
-      this.tweens.add({
-        targets: this.player,
-        x: targetX,
-        y: targetY,
-        ease: "Linear",
-        duration: 200, // Duration of the movement in milliseconds
-        onComplete: () => {
-          this.player.anims.stop(); // Stop animation when movement is complete
-          this.actionTaken(); // Call this method when an action is completed
-        },
-      });
-    }
-
-    // Space bar for plant harvest
     if (event.code === "Space") {
-      const playerTileX = Math.floor(this.player.x / this.gridSize);
-      const playerTileY = Math.floor(this.player.y / this.gridSize);
-      const tile = this.dirtLayer.getTileAt(playerTileX, playerTileY);
+        const playerTileX = Math.floor(this.player.x / this.gridSize);
+        const playerTileY = Math.floor(this.player.y / this.gridSize);
+        const tile = this.dirtLayer.getTileAt(playerTileX, playerTileY);
 
-      if (tile && tile.properties.plantable) {
-        // Attempt planting or harvesting only if it's a valid tile
-        this.attemptPlantingOrHarvesting();
-        this.actionTaken();
-      }
-      // Do not count as an action if the tile is not plantable
+        if (tile && tile.properties.plantable) {
+            this.attemptPlantingOrHarvesting();
+            // Call actionTaken here only for planting/harvesting action
+            this.actionTaken();
+        }
     }
-  }
+}
+
 
   // Position record
   canMoveTo(x, y) {
@@ -239,9 +255,11 @@ class Play extends Phaser.Scene {
     // Convert tile coordinates back to world coordinates for placing the sprite
     const x = tileX * this.gridSize + this.gridSize / 2;
     const y = tileY * this.gridSize + this.gridSize / 2;
-
+    
+    // Get plant and animation
     if (!this.getPlantAt(x, y)) {
       const plant = new Plant(this, x, y, species);
+      plant.sprite.anims.play('grow' + species.charAt(0).toUpperCase() + species.slice(1));
       this.plants.push(plant);
     }
   }
@@ -281,20 +299,20 @@ class Play extends Phaser.Scene {
 
     // If the tile is plantable and there is no plant there, plant a seed
     if (tile && tile.properties.plantable) {
-      const speciesArray = ["potato", "tomato", "eggplant"];
-      const randomSpecies = Phaser.Utils.Array.GetRandom(speciesArray);
-      this.plantSeed(tileX, tileY, randomSpecies);
-      console.log("Planted a " + randomSpecies + " at:", tileX, tileY);
-    } else {
-      // If there is a plant and it's ready to harvest, harvest it
       const plant = this.getPlantAt(this.player.x, this.player.y);
-      if (plant && plant.isReadyToHarvest) {
-        plant.harvest();
-        console.log("Harvested a plant at:", tileX, tileY);
+      if (plant) {
+          if (plant.isReadyToHarvest) {
+              plant.harvest();
+              console.log("Harvested a " + plant.species + " at:", tileX, tileY);
+          } else {
+              console.log("The plant is not ready to be harvested yet.");
+          }
+      } else {
+          // If no plant at this tile, then plant a seed
+          const randomSpecies = Phaser.Utils.Array.GetRandom(["potato", "tomato", "eggplant"]);
+          this.plantSeed(tileX, tileY, randomSpecies);
       }
     }
-
-    // Call this function in your handleKeyDown method when the player presses the 'Space' bar
   }
 
   updatePlants() {
