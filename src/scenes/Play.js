@@ -4,6 +4,7 @@ class Play extends Phaser.Scene {
     this.actionCount = 0;
     this.actionsPerTurn = 10; // Number of actions per turn
     this.currentTurn = 1; // Current turn number
+    this.harvestedPlantsCount = 0; // for wining condition F0 last requirement
   }
 
   preload() {
@@ -279,6 +280,7 @@ class Play extends Phaser.Scene {
 
     // Log the end of the turn for debugging
     console.log("Turn ended");
+
   }
 
   updateTileEnvironment() {
@@ -316,7 +318,15 @@ class Play extends Phaser.Scene {
     );
     plant.sprite.destroy();
     this.plants = this.plants.filter((p) => p !== plant);
-  }
+
+     // Win condition counter
+    this.harvestedPlantsCount++;
+
+    // Check if the player harvested 30 plants
+    if (this.harvestedPlantsCount === 30) {
+      window.alert("You harvested 30 random plants, haha~");
+    }
+}
   
 
   getPlantAt(tileX, tileY) {

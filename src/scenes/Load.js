@@ -20,6 +20,7 @@ class Load extends Phaser.Scene {
       console.log("Local storage not supported");
     }
 
+    window.alert(" Arrow key is moving, Q is planting, W is harvesting");
     // go to Title scene
     this.scene.start("playScene");
   }
