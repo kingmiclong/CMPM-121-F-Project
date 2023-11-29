@@ -157,7 +157,7 @@ class Play extends Phaser.Scene {
   handleKeyDown(event) {
     let targetX = this.player.x;
     let targetY = this.player.y;
-    let moved = false; // Flag to check if movement occurs
+    let moved = false; // Flag 
 
     // Handle movement directly without checking the velocity
     switch (event.code) {
@@ -183,7 +183,7 @@ class Play extends Phaser.Scene {
         break;
     }
 
-    // If movement key was pressed, try to move and call actionTaken if the movement occurs
+    // Limit movement while pressing the key
     if (moved && this.canMoveTo(targetX, targetY)) {
       this.tweens.add({
         targets: this.player,
@@ -198,7 +198,7 @@ class Play extends Phaser.Scene {
       });
     }
 
-    // Separate planting and harvesting actions based on key pressed
+    // Q is plant W is harvest
     if (this.keys.plant.isDown) {
       this.plantAction();
     } else if (this.keys.harvest.isDown) {
@@ -214,7 +214,7 @@ class Play extends Phaser.Scene {
     if (
       tile &&
       tile.properties.plantable &&
-      !this.getPlantAt(tileX, tileY) // Adjusted to use tile coordinates
+      !this.getPlantAt(tileX, tileY) // Tile Coordinate
     ) {
       const species = Phaser.Utils.Array.GetRandom([
         "potato",
@@ -231,7 +231,7 @@ class Play extends Phaser.Scene {
   harvestAction() {
     const tileX = this.dirtLayer.worldToTileX(this.player.x);
     const tileY = this.dirtLayer.worldToTileY(this.player.y);
-    const plant = this.getPlantAt(tileX, tileY); // Adjusted to use tile coordinates
+    const plant = this.getPlantAt(tileX, tileY); // Tile Coordinate
     if (plant && plant.isReadyToHarvest) {
       this.harvestPlant(plant);
       this.actionTaken();
@@ -273,17 +273,38 @@ class Play extends Phaser.Scene {
     this.actionText.setText("Actions Left: " + this.actionsPerTurn);
 
     // Update game state for the new turn
-    this.updateEnvironment();
+    this.updateTileEnvironment();
+    this.updatePlantsWithEnvironment();
     this.updatePlants();
 
     // Log the end of the turn for debugging
     console.log("Turn ended");
   }
 
-  updateEnvironment() {
-    // ... logic to update environmental factors ...
+  updateTileEnvironment() {
+    // random value for dirt layer - each tile
+    this.dirtLayer.forEachTile(tile => {
+      // Directly modifying the custom properties of each tile
+      tile.properties.sunValue = Phaser.Math.Between(20, 50);
+      tile.properties.waterValue = Phaser.Math.Between(20, 50);
+    });
   }
 
+  updatePlantsWithEnvironment() {
+    // update plant value 
+    this.plants.forEach(plant => {
+      const tileX = this.dirtLayer.worldToTileX(plant.sprite.x);
+      const tileY = this.dirtLayer.worldToTileY(plant.sprite.y);
+      const tile = this.dirtLayer.getTileAt(tileX, tileY);
+  
+      if (tile) {
+        plant.sunlight.push(tile.properties.sunValue);
+        plant.water.push(tile.properties.waterValue);
+      }
+  
+      plant.checkGrowthConditions();
+    });
+  } 
   harvestPlant(plant) {
     // Convert plant world coordinates to tile coordinates for logging
     const tileX = this.dirtLayer.worldToTileX(plant.sprite.x);
@@ -346,8 +367,7 @@ class Play extends Phaser.Scene {
   }
   updatePlants() {
     this.plants.forEach((plant) => {
-      // Logic for when to grow plants, for example, on a new turn
-      plant.grow();
+        plant.checkGrowthConditions(); // Check growth conditions 
     });
   }
 }

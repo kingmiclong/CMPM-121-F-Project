@@ -94,6 +94,16 @@
                  "name":"plantable",
                  "type":"bool",
                  "value":true
+                }, 
+                {
+                 "name":"sunValue",
+                 "type":"float",
+                 "value":0
+                }, 
+                {
+                 "name":"waterValue",
+                 "type":"float",
+                 "value":0
                 }],
          "type":"tilelayer",
          "visible":true,
@@ -164,6 +174,16 @@
                          "name":"plantable",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"sunValue",
+                         "type":"float",
+                         "value":0
+                        }, 
+                        {
+                         "name":"waterValue",
+                         "type":"float",
+                         "value":0
                         }]
                 }, 
                 {
@@ -173,6 +193,16 @@
                          "name":"plantable",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"sunValue",
+                         "type":"float",
+                         "value":0
+                        }, 
+                        {
+                         "name":"waterValue",
+                         "type":"float",
+                         "value":0
                         }]
                 }, 
                 {
@@ -182,6 +212,16 @@
                          "name":"plantable",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"sunValue",
+                         "type":"float",
+                         "value":0
+                        }, 
+                        {
+                         "name":"waterValue",
+                         "type":"float",
+                         "value":0
                         }]
                 }, 
                 {
@@ -191,6 +231,16 @@
                          "name":"plantable",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"sunValue",
+                         "type":"float",
+                         "value":0
+                        }, 
+                        {
+                         "name":"waterValue",
+                         "type":"float",
+                         "value":0
                         }]
                 }, 
                 {
@@ -200,6 +250,16 @@
                          "name":"plantable",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"sunValue",
+                         "type":"float",
+                         "value":0
+                        }, 
+                        {
+                         "name":"waterValue",
+                         "type":"float",
+                         "value":0
                         }]
                 }, 
                 {
@@ -209,6 +269,16 @@
                          "name":"plantable",
                          "type":"bool",
                          "value":true
+                        }, 
+                        {
+                         "name":"sunValue",
+                         "type":"float",
+                         "value":0
+                        }, 
+                        {
+                         "name":"waterValue",
+                         "type":"float",
+                         "value":0
                         }]
                 }],
          "tilewidth":16

@@ -8,31 +8,43 @@
   <tile id="6">
    <properties>
     <property name="plantable" type="bool" value="true"/>
+    <property name="sunValue" type="float" value="0"/>
+    <property name="waterValue" type="float" value="0"/>
    </properties>
   </tile>
   <tile id="7">
    <properties>
     <property name="plantable" type="bool" value="true"/>
+    <property name="sunValue" type="float" value="0"/>
+    <property name="waterValue" type="float" value="0"/>
    </properties>
   </tile>
   <tile id="8">
    <properties>
     <property name="plantable" type="bool" value="true"/>
+    <property name="sunValue" type="float" value="0"/>
+    <property name="waterValue" type="float" value="0"/>
    </properties>
   </tile>
   <tile id="24">
    <properties>
     <property name="plantable" type="bool" value="true"/>
+    <property name="sunValue" type="float" value="0"/>
+    <property name="waterValue" type="float" value="0"/>
    </properties>
   </tile>
   <tile id="25">
    <properties>
     <property name="plantable" type="bool" value="true"/>
+    <property name="sunValue" type="float" value="0"/>
+    <property name="waterValue" type="float" value="0"/>
    </properties>
   </tile>
   <tile id="26">
    <properties>
     <property name="plantable" type="bool" value="true"/>
+    <property name="sunValue" type="float" value="0"/>
+    <property name="waterValue" type="float" value="0"/>
    </properties>
   </tile>
  </tileset>
@@ -87,6 +99,8 @@
  <layer id="3" name="Dirt" width="30" height="20">
   <properties>
    <property name="plantable" type="bool" value="true"/>
+   <property name="sunValue" type="float" value="0"/>
+   <property name="waterValue" type="float" value="0"/>
   </properties>
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

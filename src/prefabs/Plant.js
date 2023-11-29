@@ -1,6 +1,8 @@
 class Plant {
     constructor(scene, x, y, species) {
         this.scene = scene;
+        this.sunlight = []; // Sunlight
+        this.water = []; // Water
         this.species = species; // 'potato', 'tomato', or 'eggplant'
         this.growthStage = 0;
         this.isReadyToHarvest = false;
@@ -18,6 +20,49 @@ class Plant {
                 this.isReadyToHarvest = true;
             }
         }
+    }
+
+    // Grow condition
+    checkGrowthConditions() {
+        const currentSunlight = this.sunlight.reduce((a, b) => a + b, 0); // Total sunlight
+        const currentWater = this.water.reduce((a, b) => a + b, 0); // Total water
+
+        const sunNeeded = this.getSunNeeded();  
+        const waterNeeded = this.getWaterNeeded();
+
+        if (currentSunlight >= sunNeeded.min && currentSunlight <= sunNeeded.max &&
+            currentWater >= waterNeeded.min && currentWater <= waterNeeded.max) 
+        {
+            this.grow();
+        }
+        if (!sunNeeded || !waterNeeded) // Testing error and stop immediately
+        { 
+            console.error('Growth conditions are undefined for species:', this.species, 'at growth stage:', this.growthStage);
+            return;
+        }
+        // Reset the sunlight and water after checking
+        this.sunlight = [];
+        this.water = [];
+    }
+
+    // Sun value
+    getSunNeeded() {
+        const sunRequirements = {
+            'tomato': {min: 30, max: 40},
+            'potato': {min: 25, max: 35},
+            'eggplant': {min: 30, max: 40}
+        };
+        return sunRequirements[this.species];
+    }
+    
+    // Water value
+    getWaterNeeded() {
+        const waterRequirements = {
+            'tomato': {min: 30, max: 40},
+            'potato': {min: 25, max: 35},
+            'eggplant': {min: 30, max: 40}
+        };
+        return waterRequirements[this.species];
     }
 
     harvest() {
