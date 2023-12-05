@@ -5,6 +5,11 @@ class Play extends Phaser.Scene {
     this.actionsPerTurn = 10; // Number of actions per turn
     this.currentTurn = 1; // Current turn number
     this.harvestedPlantsCount = 0; // for wining condition F0 last requirement
+    this.gridState = null; // Byte array for grid state
+    this.undoStack = []; // Undo stack
+    this.redoStack = []; // Redo stack
+    this.undoPressed = false; // testing Redo Stack
+    this.redoPressed = false; // testing Undo Stack
   }
 
   preload() {
@@ -74,6 +79,9 @@ class Play extends Phaser.Scene {
 
     // Grid size matches tile size in Tiled
     this.gridSize = 16;
+    // Initialize the byte array for the grid state
+    const gridSize = this.dirtLayer.width * this.dirtLayer.height;
+    this.gridState = new Uint8Array(gridSize * 3); // 3 bytes per tile
     
     // Prevents diagonal movement and allows for grid-based movement
     this.input.keyboard.on("keydown", this.handleKeyDown, this);
@@ -81,25 +89,11 @@ class Play extends Phaser.Scene {
     // Define new Keyboard Inputs for planting and harvesting
     this.keys = {
       plant: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q),
-      harvest: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W)
+      harvest: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      undo: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.T),
+      redo: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R)
     };
 
-    // Animations create for plants
-    this.anims.create({
-      key: "growPotato",
-      frames: this.anims.generateFrameNumbers("plants", { start: 0, end: 3 }),
-      frameRate: 10,
-    });
-    this.anims.create({
-      key: "growTomato",
-      frames: this.anims.generateFrameNumbers("plants", { start: 4, end: 7 }),
-      frameRate: 10,
-    });
-    this.anims.create({
-      key: "growEggplant",
-      frames: this.anims.generateFrameNumbers("plants", { start: 8, end: 11 }),
-      frameRate: 10,
-    });
   }
 
   createAnimations() {
@@ -152,6 +146,24 @@ class Play extends Phaser.Scene {
       frameRate: 10,
       repeat: -1,
     });
+
+    // Animations create for plants
+    this.anims.create({
+      key: "growPotato",
+      frames: this.anims.generateFrameNumbers("plants", { start: 0, end: 3 }),
+      frameRate: 10,
+    });
+    this.anims.create({
+      key: "growTomato",
+      frames: this.anims.generateFrameNumbers("plants", { start: 4, end: 7 }),
+      frameRate: 10,
+    });
+    this.anims.create({
+      key: "growEggplant",
+      frames: this.anims.generateFrameNumbers("plants", { start: 8, end: 11 }),
+      frameRate: 10,
+    });
+
   }
 
   // Event Handler - Key Pressing
@@ -205,26 +217,31 @@ class Play extends Phaser.Scene {
     } else if (this.keys.harvest.isDown) {
       this.harvestAction();
     }
-  }
 
+    // Handle undo and redo
+     if (this.keys.undo.isDown) {
+      this.undoAction();
+    } else if (this.keys.redo.isDown) {
+      this.redoAction();
+    }
+  
+  }
+  
   // New method for planting action
   plantAction() {
     const tileX = this.dirtLayer.worldToTileX(this.player.x);
     const tileY = this.dirtLayer.worldToTileY(this.player.y);
     const tile = this.dirtLayer.getTileAt(tileX, tileY);
-    if (
-      tile &&
-      tile.properties.plantable &&
-      !this.getPlantAt(tileX, tileY) // Tile Coordinate
-    ) {
-      const species = Phaser.Utils.Array.GetRandom([
-        "potato",
-        "tomato",
-        "eggplant",
-      ]);
+  
+    if (tile && tile.properties.plantable && !this.getPlantAt(tileX, tileY)) {
+      // Define species before using it in recordAction
+      const species = Phaser.Utils.Array.GetRandom(["potato", "tomato", "eggplant"]);
       this.plantSeed(tileX, tileY, species);
       console.log("Planted a " + species + " at:", tileX, tileY);
       this.actionTaken();
+  
+      // Now species is defined and can be used in recordAction
+      this.recordAction({ type: "plant", tileX, tileY, species });
     }
   }
 
@@ -236,6 +253,74 @@ class Play extends Phaser.Scene {
     if (plant && plant.isReadyToHarvest) {
       this.harvestPlant(plant);
       this.actionTaken();
+    }
+    // Record the action for undo
+    this.recordAction({ type: "harvest", tileX, tileY, species: plant.species });
+  }
+  
+  recordAction(action) {
+    // Store the current grid state in the action
+    action.prevGridState = this.getGridState(action.tileX, action.tileY);
+    this.undoStack.push(action);
+    this.redoStack = []; // Clear redo stack on new action
+  }
+  
+  undoAction() {
+    if (this.undoStack.length > 0) {
+      const action = this.undoStack.pop();
+      // Revert the grid state
+      this.setGridState(action.tileX, action.tileY, action.prevGridState);
+      // Push the reverse action onto the redo stack
+      this.redoStack.push(this.getReverseAction(action));
+    }
+  }
+
+  redoAction() {
+    if (this.redoStack.length > 0) {
+      const action = this.redoStack.pop();
+      // Reapply the grid state changes
+      this.applyGridStateChange(action);
+      // Push it back onto the undo stack
+      this.undoStack.push(action);
+    }
+  }
+  getGridState(tileX, tileY) {
+    // Retrieve the current grid state for the given tile
+    const index = this.getGridStateIndex(tileX, tileY);
+    return {
+      plantable: this.gridState[index],
+      speciesCode: this.gridState[index + 1],
+      growthStage: this.gridState[index + 2]
+    };
+  }
+
+  setGridState(tileX, tileY, state) {
+    // Set the grid state for the given tile
+    const index = this.getGridStateIndex(tileX, tileY);
+    this.gridState[index] = state.plantable;
+    this.gridState[index + 1] = state.speciesCode;
+    this.gridState[index + 2] = state.growthStage;
+  }
+
+  applyGridStateChange(action) {
+    // Apply the grid state changes based on the action
+    const index = this.getGridStateIndex(action.tileX, action.tileY);
+    if (action.type === "plant") {
+      this.gridState[index] = 1;
+      this.gridState[index + 1] = this.getSpeciesCode(action.species);
+      this.gridState[index + 2] = 0;
+    } else if (action.type === "harvest") {
+      this.gridState[index] = 0;
+      this.gridState[index + 1] = 0;
+      this.gridState[index + 2] = 0;
+    }
+  }
+
+  getReverseAction(action) {
+    if (action.type === "plant") {
+      return { type: "harvest", tileX: action.tileX, tileY: action.tileY, species: action.species };
+    } else if (action.type === "harvest") {
+      return { type: "plant", tileX: action.tileX, tileY: action.tileY, species: action.species };
     }
   }
 
@@ -374,10 +459,30 @@ class Play extends Phaser.Scene {
       const plant = new Plant(this, x, y, species);
       this.plants.push(plant);
     }
+
+    // Update grid state byte array
+    const index = this.getGridStateIndex(tileX, tileY);
+    this.gridState[index] = 1; // Mark tile as plantable
+    this.gridState[index + 1] = this.getSpeciesCode(species); // Set species code
+    this.gridState[index + 2] = 0; // Initial growth stage
   }
+  
+  // Testing - GridSate
+  getGridStateIndex(tileX, tileY) {
+    return (tileY * this.dirtLayer.width + tileX) * 3;
+  }
+  
+  //Testing - Species Serial
+  getSpeciesCode(species) {
+    // Returns a code representing the species
+    const speciesCodes = { none: 0, potato: 1, tomato: 2, eggplant: 3 };
+    return speciesCodes[species] || 0;
+ }
+
   updatePlants() {
     this.plants.forEach((plant) => {
         plant.checkGrowthConditions(); // Check growth conditions 
     });
   }
+
 }
