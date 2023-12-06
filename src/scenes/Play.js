@@ -94,35 +94,55 @@ class Play extends Phaser.Scene {
       redo: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R),
     };
     // Add the event listener for the Save Game button
-    document.getElementById('saveGameButton').addEventListener('click', () => {
+    document.getElementById("saveGameButton").addEventListener("click", () => {
       this.saveGameToFile();
-  });
-   // Add the event listener for the Load Game button
-   document.getElementById('loadGameButton').addEventListener('click', () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.json';
-    fileInput.onchange = (event) => {
+    });
+    // Add the event listener for the Load Game button
+    document.getElementById("loadGameButton").addEventListener("click", () => {
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = ".json";
+      fileInput.onchange = (event) => {
         // Check if the target is an input element and has files
         const input = event.target;
         if (input instanceof HTMLInputElement && input.files.length > 0) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    // Check if the result is a string
-                    const result = e.target.result;
-                    if (typeof result === 'string') {
-                        const gameState = JSON.parse(result);
-                        this.applyGameState(gameState);
-                    }
-                };
-                reader.readAsText(file);
-            }
+          const file = input.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              // Check if the result is a string
+              const result = e.target.result;
+              if (typeof result === "string") {
+                const gameState = JSON.parse(result);
+                this.applyGameState(gameState);
+              }
+            };
+            reader.readAsText(file);
+          }
         }
-    };
-    fileInput.click();
-  });
+      };
+      fileInput.click();
+    });
+
+    // Auto-save every minute
+    this.time.addEvent({
+      delay: 60000, // 60000 ms = 1 minute
+      callback: this.autoSaveGame,
+      callbackScope: this,
+      loop: true,
+    });
+
+     // Check for auto-save
+    const autoSavedData = localStorage.getItem('autoSave');
+    if (autoSavedData) {
+      const confirmAutoLoad = confirm('Do you want to continue where you left off?');
+      if (confirmAutoLoad) {
+        this.applyGameState(JSON.parse(autoSavedData));
+      } else {
+        // Clear auto-save if the user does not want to use it
+        localStorage.removeItem('autoSave');
+      }
+    }
   }
 
   createAnimations() {
@@ -635,16 +655,20 @@ class Play extends Phaser.Scene {
   saveGameToFile() {
     const gameState = this.createCurrentGameState(); // Assuming this method returns all necessary game state data
     const gameStateString = JSON.stringify(gameState);
-    const blob = new Blob([gameStateString], { type: 'application/json' });
+    const blob = new Blob([gameStateString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
-    const a = document.createElement('a');
-    a.setAttribute('href', url);
-    a.setAttribute('download', 'gameState.json');
+    const a = document.createElement("a");
+    a.setAttribute("href", url);
+    a.setAttribute("download", "gameState.json");
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-}
-
+  }
+  autoSaveGame() {
+    const gameState = this.createCurrentGameState();
+    localStorage.setItem("autoSave", JSON.stringify(gameState));
+    console.log("Game auto-saved.");
+  }
 }
