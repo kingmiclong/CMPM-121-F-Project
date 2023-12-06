@@ -12,6 +12,12 @@ class Plant {
         this.sprite = scene.add.sprite(x, y, 'plants', frame);
     }
 
+    // Method to update the sprite frame
+    updateSprite() {
+        const frame = this.getFrameForSpecies(this.species, this.growthStage);
+        this.sprite.setFrame(frame);
+    }
+    
     grow() {
         if (this.growthStage < 3) { // 4 grow stages including seed 1st planted
             this.growthStage++;
@@ -52,6 +58,12 @@ class Plant {
             'potato': {min: 25, max: 35},
             'eggplant': {min: 30, max: 40}
         };
+        
+        if (!sunRequirements[this.species]) {
+            console.error('Invalid species for sun requirements:', this.species);
+            return { min: 0, max: 0 }; // or handle it differently
+        }
+    
         return sunRequirements[this.species];
     }
     
@@ -62,6 +74,10 @@ class Plant {
             'potato': {min: 25, max: 35},
             'eggplant': {min: 30, max: 40}
         };
+        if (!waterRequirements[this.species]) {
+            console.error('Invalid species for sun requirements:', this.species);
+            return { min: 0, max: 0 }; // or handle it differently
+        }
         return waterRequirements[this.species];
     }
 

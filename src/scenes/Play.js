@@ -168,14 +168,14 @@ class Play extends Phaser.Scene {
   handleKeyDown(event) {
     // Movement keys
     if (this.handleMovementKeys(event)) {
-        return; // If a movement key was pressed, we don't need to check other keys
+      return; // If a movement key was pressed, we don't need to check other keys
     }
 
     // Planting and harvesting keys
     if (this.keys.plant.isDown) {
-        this.plantAction();
+      this.plantAction();
     } else if (this.keys.harvest.isDown) {
-        this.harvestAction();
+      this.harvestAction();
     }
 
     // Undo/Redo keys
@@ -188,50 +188,73 @@ class Play extends Phaser.Scene {
     let moved = false;
 
     switch (event.code) {
-        case "ArrowLeft": targetX -= this.gridSize; moved = true; break;
-        case "ArrowRight": targetX += this.gridSize; moved = true; break;
-        case "ArrowUp": targetY -= this.gridSize; moved = true; break;
-        case "ArrowDown": targetY += this.gridSize; moved = true; break;
+      case "ArrowLeft":
+        targetX -= this.gridSize;
+        moved = true;
+        break;
+      case "ArrowRight":
+        targetX += this.gridSize;
+        moved = true;
+        break;
+      case "ArrowUp":
+        targetY -= this.gridSize;
+        moved = true;
+        break;
+      case "ArrowDown":
+        targetY += this.gridSize;
+        moved = true;
+        break;
     }
 
     if (moved && this.canMoveTo(targetX, targetY)) {
-        this.movePlayer(targetX, targetY);
-        return true;
+      this.movePlayer(targetX, targetY);
+      return true;
     }
     return false;
   }
 
   movePlayer(targetX, targetY) {
+    // Determine the direction of movement and play corresponding animation
+    if (targetX > this.player.x) {
+      this.player.anims.play("walkRight", true);
+    } else if (targetX < this.player.x) {
+      this.player.anims.play("walkLeft", true);
+    } else if (targetY > this.player.y) {
+      this.player.anims.play("walkDown", true);
+    } else if (targetY < this.player.y) {
+      this.player.anims.play("walkUp", true);
+    }
+
     this.tweens.add({
-        targets: this.player,
-        x: targetX,
-        y: targetY,
-        ease: "Linear",
-        duration: 200,
-        onComplete: () => {
-            this.player.anims.stop();
-            this.actionTaken();
-            this.recordGameState("move", { to: { x: targetX, y: targetY } });
-        },
+      targets: this.player,
+      x: targetX,
+      y: targetY,
+      ease: "Linear",
+      duration: 300,
+      onComplete: () => {
+        this.player.anims.stop();
+        this.actionTaken();
+        this.recordGameState("move", { to: { x: targetX, y: targetY } });
+      },
     });
   }
-  
+
   handleUndoRedoKeys(event) {
     if (event.code === "KeyT" && !this.undoPressed) {
-        this.undoAction();
-        this.undoPressed = true;
+      this.undoAction();
+      this.undoPressed = true;
     } else if (event.code === "KeyR" && !this.redoPressed) {
-        this.redoAction();
-        this.redoPressed = true;
+      this.redoAction();
+      this.redoPressed = true;
     }
 
     // Reset flags on key release
-    this.input.keyboard.on('keyup', (event) => {
-        if (event.code === "KeyT") {
-            this.undoPressed = false;
-        } else if (event.code === "KeyR") {
-            this.redoPressed = false;
-        }
+    this.input.keyboard.on("keyup", (event) => {
+      if (event.code === "KeyT") {
+        this.undoPressed = false;
+      } else if (event.code === "KeyR") {
+        this.redoPressed = false;
+      }
     });
   }
   // New method for planting action
@@ -274,7 +297,7 @@ class Play extends Phaser.Scene {
     const gameState = {
       type: actionType,
       playerPosition: { x: this.player.x, y: this.player.y },
-      plantStates: this.getPlantStates(),
+      plantStates: this.getPlantStates(), // This should include growth stages and environmental factors
       actionCount: this.actionCount,
       currentTurn: this.currentTurn,
       ...additionalData,
@@ -284,14 +307,15 @@ class Play extends Phaser.Scene {
   }
 
   getPlantStates() {
-    // Return the current state of all plants
-    return this.plants.map((plant) => ({
-      x: plant.sprite.x,
-      y: plant.sprite.y,
-      species: plant.species,
-      growthStage: plant.growthStage,
+    return this.plants.map(plant => ({
+        x: plant.sprite.x,
+        y: plant.sprite.y,
+        species: plant.species,
+        growthStage: plant.growthStage,
+        sunlight: [...plant.sunlight], // Clone the arrays
+        water: [...plant.water]
     }));
-  }
+}
 
   undoAction() {
     if (this.undoStack.length > 0) {
@@ -338,18 +362,21 @@ class Play extends Phaser.Scene {
   }
 
   applyPlantStates(plantStates) {
-    // First, clear existing plants
-    this.plants.forEach((plant) => plant.sprite.destroy());
+    // First, destroy existing plant sprites
+    this.plants.forEach(plant => plant.sprite.destroy());
     this.plants = [];
 
     // Then, recreate plants based on the saved states
-    plantStates.forEach((state) => {
-      const plant = new Plant(this, state.x, state.y, state.species);
-      plant.growthStage = state.growthStage;
-      // Other properties of plant can be set here as needed
-      this.plants.push(plant);
-    });
-  }
+    plantStates.forEach(state => {
+            const plant = new Plant(this, state.x, state.y, state.species);
+            plant.growthStage = state.growthStage;
+            plant.sunlight = [...state.sunlight];
+            plant.water = [...state.water];
+            plant.isReadyToHarvest = state.isReadyToHarvest; // Restore harvest state
+            plant.updateSprite(); // Update the sprite frame based on the growth stage
+            this.plants.push(plant);
+        });
+}
 
   getGridState(tileX, tileY) {
     // Retrieve the current grid state for the given tile
@@ -374,7 +401,7 @@ class Play extends Phaser.Scene {
     const index = this.getGridStateIndex(action.tileX, action.tileY);
     if (action.type === "plant") {
       this.gridState[index] = 1;
-      this.gridState[index + 1] = this.getSpeciesCode(action.species);
+      this.gridState[index + 1] = this.getSpeciesFromCode(action.species);
       this.gridState[index + 2] = 0;
     } else if (action.type === "harvest") {
       this.gridState[index] = 0;
@@ -441,10 +468,12 @@ class Play extends Phaser.Scene {
     this.actionCount = 0;
 
     // Update game state for the new turn
-    this.updateUI(); // Update UI for the new turn
+    this.updateUI();
     this.updateTileEnvironment();
-    this.updatePlantsWithEnvironment();
-    this.updatePlants();
+    this.updatePlantsWithEnvironment(); // Updates plants based on the environment
+
+    // Record the state of the game
+    this.recordGameState("endTurn");
 
     // Log the end of the turn for debugging
     console.log("Turn ended");
@@ -544,7 +573,7 @@ class Play extends Phaser.Scene {
     // Update grid state byte array
     const index = this.getGridStateIndex(tileX, tileY);
     this.gridState[index] = 1; // Mark tile as plantable
-    this.gridState[index + 1] = this.getSpeciesCode(species); // Set species code
+    this.gridState[index + 1] = this.getSpeciesFromCode(species); // Set species code
     this.gridState[index + 2] = 0; // Initial growth stage
   }
 
@@ -554,15 +583,19 @@ class Play extends Phaser.Scene {
   }
 
   //Testing - Species Serial
-  getSpeciesCode(species) {
-    // Returns a code representing the species
-    const speciesCodes = { none: 0, potato: 1, tomato: 2, eggplant: 3 };
-    return speciesCodes[species] || 0;
-  }
+  getSpeciesFromCode(code) {
+    const speciesByCode = { 0: 'none', 1: 'potato', 2: 'tomato', 3: 'eggplant' };
+    return speciesByCode[code] || 'none';
+}
 
-  updatePlants() {
-    this.plants.forEach((plant) => {
-      plant.checkGrowthConditions(); // Check growth conditions
-    });
-  }
+ updatePlants() {
+  this.plants.forEach(plant => {
+      plant.checkGrowthConditions();
+      // Update GridState with the new growth stage
+      const tileX = this.dirtLayer.worldToTileX(plant.sprite.x);
+      const tileY = this.dirtLayer.worldToTileY(plant.sprite.y);
+      const index = this.getGridStateIndex(tileX, tileY);
+      this.gridState[index + 2] = plant.growthStage;
+  });
+}
 }
