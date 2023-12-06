@@ -172,6 +172,10 @@ class Play extends Phaser.Scene {
     let targetY = this.player.y;
     let moved = false; // Flag 
 
+    // Store previous position before moving
+    let prevX = this.player.x;
+    let prevY = this.player.y;
+
     // Handle movement directly without checking the velocity
     switch (event.code) {
       case "ArrowLeft":
@@ -207,6 +211,9 @@ class Play extends Phaser.Scene {
         onComplete: () => {
           this.player.anims.stop();
           this.actionTaken();
+
+          // Record movement action for undo/redo
+          this.recordGameState("move", { from: { x: prevX, y: prevY }, to: { x: targetX, y: targetY } });
         },
       });
     }
@@ -224,7 +231,23 @@ class Play extends Phaser.Scene {
     } else if (this.keys.redo.isDown) {
       this.redoAction();
     }
-  
+    // Handle undo and redo with single key press
+    if (event.code === "KeyT" && !this.undoPressed) {
+      this.undoAction();
+      this.undoPressed = true;
+    } else if (event.code === "KeyR" && !this.redoPressed) {
+      this.redoAction();
+      this.redoPressed = true;
+    }
+    // Reset flags on key release
+    this.input.keyboard.on('keyup', (event) => {
+      if (event.code === "KeyT") {
+        this.undoPressed = false;
+      } else if (event.code === "KeyR") {
+        this.redoPressed = false;
+      }
+    });
+
   }
   
   // New method for planting action
@@ -241,7 +264,7 @@ class Play extends Phaser.Scene {
       this.actionTaken();
   
       // Now species is defined and can be used in recordAction
-      this.recordAction({ type: "plant", tileX, tileY, species });
+      this.recordGameState("plant", { species, tileX, tileY });
     }
   }
 
@@ -255,35 +278,88 @@ class Play extends Phaser.Scene {
       this.actionTaken();
     }
     // Record the action for undo
-    this.recordAction({ type: "harvest", tileX, tileY, species: plant.species });
+    this.recordGameState("harvest", { species: plant.species, tileX, tileY });
   }
   
-  recordAction(action) {
-    // Store the current grid state in the action
-    action.prevGridState = this.getGridState(action.tileX, action.tileY);
-    this.undoStack.push(action);
+  // Modified method to record the entire game state
+  recordGameState(actionType, additionalData = {}) {
+    const gameState = {
+      type: actionType,
+      playerPosition: { x: this.player.x, y: this.player.y },
+      plantStates: this.getPlantStates(),
+      actionCount: this.actionCount,
+      currentTurn: this.currentTurn,
+      ...additionalData
+    };
+    this.undoStack.push(gameState);
     this.redoStack = []; // Clear redo stack on new action
   }
   
+  getPlantStates() {
+    // Return the current state of all plants
+    return this.plants.map(plant => ({
+      x: plant.sprite.x,
+      y: plant.sprite.y,
+      species: plant.species,
+      growthStage: plant.growthStage
+    }));
+  }
+
   undoAction() {
     if (this.undoStack.length > 0) {
-      const action = this.undoStack.pop();
-      // Revert the grid state
-      this.setGridState(action.tileX, action.tileY, action.prevGridState);
-      // Push the reverse action onto the redo stack
-      this.redoStack.push(this.getReverseAction(action));
+      const prevState = this.undoStack.pop();
+      this.applyGameState(prevState);
+      this.redoStack.push(this.createCurrentGameState()); // Save the current state before undo
     }
   }
 
   redoAction() {
     if (this.redoStack.length > 0) {
-      const action = this.redoStack.pop();
-      // Reapply the grid state changes
-      this.applyGridStateChange(action);
-      // Push it back onto the undo stack
-      this.undoStack.push(action);
+      const nextState = this.redoStack.pop();
+      this.applyGameState(nextState);
+      this.undoStack.push(this.createCurrentGameState()); // Save the current state before redo
     }
+  } 
+
+  createCurrentGameState() {
+    return {
+      playerPosition: { x: this.player.x, y: this.player.y },
+      plantStates: this.getPlantStates(),
+      actionCount: this.actionCount,
+      currentTurn: this.currentTurn,
+      // Any additional data needed
+    };
   }
+  
+  applyGameState(gameState) {
+    // Apply player position
+    this.player.setPosition(gameState.playerPosition.x, gameState.playerPosition.y);
+
+    // Apply plant states
+    this.applyPlantStates(gameState.plantStates);
+
+    // Apply action count and turn number
+    this.actionCount = gameState.actionCount;
+    this.currentTurn = gameState.currentTurn;
+
+    // Update UI elements
+    this.updateUI();
+  }
+  
+  applyPlantStates(plantStates) {
+    // First, clear existing plants
+    this.plants.forEach(plant => plant.sprite.destroy());
+    this.plants = [];
+  
+    // Then, recreate plants based on the saved states
+    plantStates.forEach(state => {
+      const plant = new Plant(this, state.x, state.y, state.species);
+      plant.growthStage = state.growthStage;
+      // Other properties of plant can be set here as needed
+      this.plants.push(plant);
+    });
+  }
+
   getGridState(tileX, tileY) {
     // Retrieve the current grid state for the given tile
     const index = this.getGridStateIndex(tileX, tileY);
@@ -317,6 +393,9 @@ class Play extends Phaser.Scene {
   }
 
   getReverseAction(action) {
+    if (action.type === "move") {
+      return { type: "move", from: action.to, to: action.from };
+    }
     if (action.type === "plant") {
       return { type: "harvest", tileX: action.tileX, tileY: action.tileY, species: action.species };
     } else if (action.type === "harvest") {
@@ -336,15 +415,19 @@ class Play extends Phaser.Scene {
     );
   }
 
-  // Action counting
+  updateUI() {
+    // Update turn and action count display
+    this.turnText.setText("Turn: " + this.currentTurn);
+    this.actionText.setText("Actions Left: " + (this.actionsPerTurn - this.actionCount));
+  }
+
+  // Action counting method
   actionTaken() {
     this.actionCount++;
-    this.actionText.setText(
-      "Actions Left: " + (this.actionsPerTurn - this.actionCount)
-    );
-
     if (this.actionCount >= this.actionsPerTurn) {
       this.endTurn();
+    } else {
+      this.updateUI(); // Update UI only if the turn hasn't ended
     }
   }
 
@@ -354,11 +437,8 @@ class Play extends Phaser.Scene {
     this.currentTurn++;
     this.actionCount = 0;
 
-    // Update text elements
-    this.turnText.setText("Turn: " + this.currentTurn);
-    this.actionText.setText("Actions Left: " + this.actionsPerTurn);
-
     // Update game state for the new turn
+    this.updateUI(); // Update UI for the new turn
     this.updateTileEnvironment();
     this.updatePlantsWithEnvironment();
     this.updatePlants();
