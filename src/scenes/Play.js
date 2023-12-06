@@ -82,7 +82,7 @@ class Play extends Phaser.Scene {
     // Initialize the byte array for the grid state
     const gridSize = this.dirtLayer.width * this.dirtLayer.height;
     this.gridState = new Uint8Array(gridSize * 3); // 3 bytes per tile
-    
+
     // Prevents diagonal movement and allows for grid-based movement
     this.input.keyboard.on("keydown", this.handleKeyDown, this);
 
@@ -91,9 +91,8 @@ class Play extends Phaser.Scene {
       plant: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q),
       harvest: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
       undo: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.T),
-      redo: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R)
+      redo: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R),
     };
-
   }
 
   createAnimations() {
@@ -163,106 +162,95 @@ class Play extends Phaser.Scene {
       frames: this.anims.generateFrameNumbers("plants", { start: 8, end: 11 }),
       frameRate: 10,
     });
-
   }
 
   // Event Handler - Key Pressing
   handleKeyDown(event) {
-    let targetX = this.player.x;
-    let targetY = this.player.y;
-    let moved = false; // Flag 
-
-    // Store previous position before moving
-    let prevX = this.player.x;
-    let prevY = this.player.y;
-
-    // Handle movement directly without checking the velocity
-    switch (event.code) {
-      case "ArrowLeft":
-        targetX -= this.gridSize;
-        this.player.anims.play("walkLeft", true);
-        moved = true;
-        break;
-      case "ArrowRight":
-        targetX += this.gridSize;
-        this.player.anims.play("walkRight", true);
-        moved = true;
-        break;
-      case "ArrowUp":
-        targetY -= this.gridSize;
-        this.player.anims.play("walkUp", true);
-        moved = true;
-        break;
-      case "ArrowDown":
-        targetY += this.gridSize;
-        this.player.anims.play("walkDown", true);
-        moved = true;
-        break;
+    // Movement keys
+    if (this.handleMovementKeys(event)) {
+        return; // If a movement key was pressed, we don't need to check other keys
     }
 
-    // Limit movement while pressing the key
+    // Planting and harvesting keys
+    if (this.keys.plant.isDown) {
+        this.plantAction();
+    } else if (this.keys.harvest.isDown) {
+        this.harvestAction();
+    }
+
+    // Undo/Redo keys
+    this.handleUndoRedoKeys(event);
+  }
+
+  handleMovementKeys(event) {
+    let targetX = this.player.x;
+    let targetY = this.player.y;
+    let moved = false;
+
+    switch (event.code) {
+        case "ArrowLeft": targetX -= this.gridSize; moved = true; break;
+        case "ArrowRight": targetX += this.gridSize; moved = true; break;
+        case "ArrowUp": targetY -= this.gridSize; moved = true; break;
+        case "ArrowDown": targetY += this.gridSize; moved = true; break;
+    }
+
     if (moved && this.canMoveTo(targetX, targetY)) {
-      this.tweens.add({
+        this.movePlayer(targetX, targetY);
+        return true;
+    }
+    return false;
+  }
+
+  movePlayer(targetX, targetY) {
+    this.tweens.add({
         targets: this.player,
         x: targetX,
         y: targetY,
         ease: "Linear",
         duration: 200,
         onComplete: () => {
-          this.player.anims.stop();
-          this.actionTaken();
-
-          // Record movement action for undo/redo
-          this.recordGameState("move", { from: { x: prevX, y: prevY }, to: { x: targetX, y: targetY } });
+            this.player.anims.stop();
+            this.actionTaken();
+            this.recordGameState("move", { to: { x: targetX, y: targetY } });
         },
-      });
-    }
-
-    // Q is plant W is harvest
-    if (this.keys.plant.isDown) {
-      this.plantAction();
-    } else if (this.keys.harvest.isDown) {
-      this.harvestAction();
-    }
-
-    // Handle undo and redo
-     if (this.keys.undo.isDown) {
-      this.undoAction();
-    } else if (this.keys.redo.isDown) {
-      this.redoAction();
-    }
-    // Handle undo and redo with single key press
-    if (event.code === "KeyT" && !this.undoPressed) {
-      this.undoAction();
-      this.undoPressed = true;
-    } else if (event.code === "KeyR" && !this.redoPressed) {
-      this.redoAction();
-      this.redoPressed = true;
-    }
-    // Reset flags on key release
-    this.input.keyboard.on('keyup', (event) => {
-      if (event.code === "KeyT") {
-        this.undoPressed = false;
-      } else if (event.code === "KeyR") {
-        this.redoPressed = false;
-      }
     });
-
   }
   
+  handleUndoRedoKeys(event) {
+    if (event.code === "KeyT" && !this.undoPressed) {
+        this.undoAction();
+        this.undoPressed = true;
+    } else if (event.code === "KeyR" && !this.redoPressed) {
+        this.redoAction();
+        this.redoPressed = true;
+    }
+
+    // Reset flags on key release
+    this.input.keyboard.on('keyup', (event) => {
+        if (event.code === "KeyT") {
+            this.undoPressed = false;
+        } else if (event.code === "KeyR") {
+            this.redoPressed = false;
+        }
+    });
+  }
   // New method for planting action
   plantAction() {
     const tileX = this.dirtLayer.worldToTileX(this.player.x);
     const tileY = this.dirtLayer.worldToTileY(this.player.y);
     const tile = this.dirtLayer.getTileAt(tileX, tileY);
-  
+
     if (tile && tile.properties.plantable && !this.getPlantAt(tileX, tileY)) {
       // Define species before using it in recordAction
-      const species = Phaser.Utils.Array.GetRandom(["potato", "tomato", "eggplant"]);
+      const species = Phaser.Utils.Array.GetRandom([
+        "potato",
+        "tomato",
+        "eggplant",
+      ]);
       this.plantSeed(tileX, tileY, species);
       console.log("Planted a " + species + " at:", tileX, tileY);
       this.actionTaken();
-  
+
       // Now species is defined and can be used in recordAction
       this.recordGameState("plant", { species, tileX, tileY });
     }
@@ -280,7 +268,7 @@ class Play extends Phaser.Scene {
     // Record the action for undo
     this.recordGameState("harvest", { species: plant.species, tileX, tileY });
   }
-  
+
   // Modified method to record the entire game state
   recordGameState(actionType, additionalData = {}) {
     const gameState = {
@@ -289,19 +277,19 @@ class Play extends Phaser.Scene {
       plantStates: this.getPlantStates(),
       actionCount: this.actionCount,
       currentTurn: this.currentTurn,
-      ...additionalData
+      ...additionalData,
     };
     this.undoStack.push(gameState);
     this.redoStack = []; // Clear redo stack on new action
   }
-  
+
   getPlantStates() {
     // Return the current state of all plants
-    return this.plants.map(plant => ({
+    return this.plants.map((plant) => ({
       x: plant.sprite.x,
       y: plant.sprite.y,
       species: plant.species,
-      growthStage: plant.growthStage
+      growthStage: plant.growthStage,
     }));
   }
 
@@ -319,7 +307,7 @@ class Play extends Phaser.Scene {
       this.applyGameState(nextState);
       this.undoStack.push(this.createCurrentGameState()); // Save the current state before redo
     }
-  } 
+  }
 
   createCurrentGameState() {
     return {
@@ -330,10 +318,13 @@ class Play extends Phaser.Scene {
       // Any additional data needed
     };
   }
-  
+
   applyGameState(gameState) {
     // Apply player position
-    this.player.setPosition(gameState.playerPosition.x, gameState.playerPosition.y);
+    this.player.setPosition(
+      gameState.playerPosition.x,
+      gameState.playerPosition.y
+    );
 
     // Apply plant states
     this.applyPlantStates(gameState.plantStates);
@@ -345,14 +336,14 @@ class Play extends Phaser.Scene {
     // Update UI elements
     this.updateUI();
   }
-  
+
   applyPlantStates(plantStates) {
     // First, clear existing plants
-    this.plants.forEach(plant => plant.sprite.destroy());
+    this.plants.forEach((plant) => plant.sprite.destroy());
     this.plants = [];
-  
+
     // Then, recreate plants based on the saved states
-    plantStates.forEach(state => {
+    plantStates.forEach((state) => {
       const plant = new Plant(this, state.x, state.y, state.species);
       plant.growthStage = state.growthStage;
       // Other properties of plant can be set here as needed
@@ -366,7 +357,7 @@ class Play extends Phaser.Scene {
     return {
       plantable: this.gridState[index],
       speciesCode: this.gridState[index + 1],
-      growthStage: this.gridState[index + 2]
+      growthStage: this.gridState[index + 2],
     };
   }
 
@@ -397,9 +388,19 @@ class Play extends Phaser.Scene {
       return { type: "move", from: action.to, to: action.from };
     }
     if (action.type === "plant") {
-      return { type: "harvest", tileX: action.tileX, tileY: action.tileY, species: action.species };
+      return {
+        type: "harvest",
+        tileX: action.tileX,
+        tileY: action.tileY,
+        species: action.species,
+      };
     } else if (action.type === "harvest") {
-      return { type: "plant", tileX: action.tileX, tileY: action.tileY, species: action.species };
+      return {
+        type: "plant",
+        tileX: action.tileX,
+        tileY: action.tileY,
+        species: action.species,
+      };
     }
   }
 
@@ -418,7 +419,9 @@ class Play extends Phaser.Scene {
   updateUI() {
     // Update turn and action count display
     this.turnText.setText("Turn: " + this.currentTurn);
-    this.actionText.setText("Actions Left: " + (this.actionsPerTurn - this.actionCount));
+    this.actionText.setText(
+      "Actions Left: " + (this.actionsPerTurn - this.actionCount)
+    );
   }
 
   // Action counting method
@@ -445,12 +448,11 @@ class Play extends Phaser.Scene {
 
     // Log the end of the turn for debugging
     console.log("Turn ended");
-
   }
 
   updateTileEnvironment() {
     // random value for dirt layer - each tile
-    this.dirtLayer.forEachTile(tile => {
+    this.dirtLayer.forEachTile((tile) => {
       // Directly modifying the custom properties of each tile
       tile.properties.sunValue = Phaser.Math.Between(20, 50);
       tile.properties.waterValue = Phaser.Math.Between(20, 50);
@@ -458,20 +460,20 @@ class Play extends Phaser.Scene {
   }
 
   updatePlantsWithEnvironment() {
-    // update plant value 
-    this.plants.forEach(plant => {
+    // update plant value
+    this.plants.forEach((plant) => {
       const tileX = this.dirtLayer.worldToTileX(plant.sprite.x);
       const tileY = this.dirtLayer.worldToTileY(plant.sprite.y);
       const tile = this.dirtLayer.getTileAt(tileX, tileY);
-  
+
       if (tile) {
         plant.sunlight.push(tile.properties.sunValue);
         plant.water.push(tile.properties.waterValue);
       }
-  
+
       plant.checkGrowthConditions();
     });
-  } 
+  }
   harvestPlant(plant) {
     // Convert plant world coordinates to tile coordinates for logging
     const tileX = this.dirtLayer.worldToTileX(plant.sprite.x);
@@ -484,15 +486,14 @@ class Play extends Phaser.Scene {
     plant.sprite.destroy();
     this.plants = this.plants.filter((p) => p !== plant);
 
-     // Win condition counter
+    // Win condition counter
     this.harvestedPlantsCount++;
 
     // Check if the player harvested 30 plants
     if (this.harvestedPlantsCount === 30) {
       window.alert("You harvested 30 random plants, haha~");
     }
-}
-  
+  }
 
   getPlantAt(tileX, tileY) {
     return this.plants.find((plant) => {
@@ -546,23 +547,22 @@ class Play extends Phaser.Scene {
     this.gridState[index + 1] = this.getSpeciesCode(species); // Set species code
     this.gridState[index + 2] = 0; // Initial growth stage
   }
-  
+
   // Testing - GridSate
   getGridStateIndex(tileX, tileY) {
     return (tileY * this.dirtLayer.width + tileX) * 3;
   }
-  
+
   //Testing - Species Serial
   getSpeciesCode(species) {
     // Returns a code representing the species
     const speciesCodes = { none: 0, potato: 1, tomato: 2, eggplant: 3 };
     return speciesCodes[species] || 0;
- }
+  }
 
   updatePlants() {
     this.plants.forEach((plant) => {
-        plant.checkGrowthConditions(); // Check growth conditions 
+      plant.checkGrowthConditions(); // Check growth conditions
     });
   }
-
 }
