@@ -99,6 +99,24 @@ updateTileEnvironment() {
 ```
 
 ### Internal DSL for Plants and Growth Conditions
+Our plant types and growth conditions were changed to an internal DSL, to allow the user to tweak their numbers and adjust how the plants grow.
+```javascript
+// Define species with the new DSL
+PlantSpecies.defineSpecies('potato')
+    .setSunRange(25, 35)
+    .setWaterRange(20, 30)
+    .setFrames([0, 1, 2, 3]);
+
+PlantSpecies.defineSpecies('tomato')
+    .setSunRange(30, 40)
+    .setWaterRange(25, 35)
+    .setFrames([4, 5, 6, 7]);
+
+PlantSpecies.defineSpecies('eggplant')
+    .setSunRange(30, 40)
+    .setWaterRange(30, 40)
+    .setFrames([8, 9, 10, 11]);
+```
 
 ## Reflection
 After working on the F2 requirements, and doing a bit of refactoring to adjust to the new changes, we've realized that now might be a good time to try and add some more player feedback. While the deadline is tight and we're a small group, we have visions of adding more features that make the game more easy to follow. We talked about adding progress bars for plant growth, picking of different seed types instead of random planting, visualization of the task progress for finishing the game, and much more. Everyone seems settled into their roles and things are going well.
