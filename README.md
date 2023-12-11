@@ -58,8 +58,24 @@ After working on the F1 requirements, our goal has shifted slightly. While havin
 
 ## How we satisfied the software requirements
 ### F0+F1
-- **[F0.a] You control a character moving on a 2D grid:** same as last week
+- **F0 Requirements:** While there were not a ton of major changes to satisfy the F0 requirements, there was a few worth noting. We changed the way that we update tiles in order to match the gameScenario, with weather policy and rules. We altered the way that our victory condition works so it is no longer hard coded, and instead included in the game mechanics as a text file.
+- **F1 Requirements:** No major changes.
 ### External DSL for Scenario Design
+We are using a gameScenario.json file as an external DSL, and modified our Play.js function to work with the external DSL. Here is an example of the JSON file, as well as a spot where the code is being used.
+```javascript
+// Use weather policy for sun and water values
+updateTileEnvironment() { 
+ this.dirtLayer.forEachTile((tile) => {
+    tile.properties.sunValue = Phaser.Math.Between(
+      this.weatherPolicy.sunlightRange[0], 
+      this.weatherPolicy.sunlightRange[1]
+    );
+    tile.properties.waterValue = Phaser.Math.Between(
+      this.weatherPolicy.waterRange[0], 
+      this.weatherPolicy.waterRange[1]
+    );
+  });
+```
 
 ### Internal DSL for Plants and Growth Conditions
 
