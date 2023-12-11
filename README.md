@@ -61,7 +61,28 @@ After working on the F1 requirements, our goal has shifted slightly. While havin
 - **F0 Requirements:** While there were not a ton of major changes to satisfy the F0 requirements, there was a few worth noting. We changed the way that we update tiles in order to match the gameScenario, with weather policy and rules. We altered the way that our victory condition works so it is no longer hard coded, and instead included in the game mechanics as a text file.
 - **F1 Requirements:** No major changes.
 ### External DSL for Scenario Design
-We are using a gameScenario.json file as an external DSL, and modified our Play.js function to work with the external DSL. Here is an example of the JSON file, as well as a spot where the code is being used.
+We are using a gameScenario.json file as an external DSL, and modified our Play.js function to work with the external DSL. All of the values can be tweaked to alter the way that the game plays. Here is an example of the JSON file, as well as a spot where the code is being used.
+```
+{
+    "scenarios": [
+      {
+        "name": "Scenario 1",
+        "startingConditions": {
+          "playerPosition": { "x": 100, "y": 100 },
+          "initialTurn": 1,
+          "actionsPerTurn": 10
+        },
+        "weatherPolicy": {
+          "sunlightRange": [20, 50],
+          "waterRange": [20, 50]
+        },
+        "victoryConditions": {
+          "harvestedPlantsCount": 30
+        }
+      }
+    ]
+  }
+```
 ```javascript
 // Use weather policy for sun and water values
 updateTileEnvironment() { 
