@@ -53,3 +53,15 @@ After working on the F0 requirements, we realized that the scope of some of our 
 
 ## Reflection
 After working on the F1 requirements, our goal has shifted slightly. While having design, tool, and engine leads are important, we have reached the point in the process where new issues pop up that are not specifically assigned to one of these roles. For example, bugs become a much bigger issue during rapid development. Shifting our focus away from our "lead" positions and working on different things such as finding and fixing bugs will be a priority going forward, as tools and design are mostly sorted. Now that we have the saving and reversing set up, we are looking at how we can evolve our game further. Players need more feedback, and adding UI elements or other indications of what is going on with the plants seems like a reasonable next step.
+
+# Devlog Entry - [12/11/2023]
+
+## How we satisfied the software requirements
+### F0+F1
+- **[F0.a] You control a character moving on a 2D grid:** same as last week
+### External DSL for Scenario Design
+
+### Internal DSL for Plants and Growth Conditions
+
+## Reflection
+After working on the F2 requirements, and doing a bit of refactoring to adjust to the new changes, we've realized that now might be a good time to try and add some more player feedback. While the deadline is tight and we're a small group, we have visions of adding more features that make the game more easy to follow. We talked about adding progress bars for plant growth, picking of different seed types instead of random planting, visualization of the task progress for finishing the game, and much more. Everyone seems settled into their roles and things are going well.
