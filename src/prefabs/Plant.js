@@ -52,30 +52,20 @@ class Plant {
 }
 
 class PlantSpecies {
-    static species = {
-        'potato': {
-            sun: {min: 25, max: 35},
-            water: {min: 20, max: 30},
-            frames: [0, 1, 2, 3]
-        },
-        'tomato': {
-            sun: {min: 30, max: 40},
-            water: {min: 25, max: 35},
-            frames: [4, 5, 6, 7]
-        },
-        'eggplant': {
-            sun: {min: 30, max: 40},
-            water: {min: 30, max: 40},
-            frames: [8, 9, 10, 11]
-        },
-    };
+    static species = {};
+
+    static defineSpecies(name) {
+        const species = new PlantType(name);
+        this.species[name] = species;
+        return species;
+    }
 
     static getSpeciesData(species) {
-        return this.species[species];
+        return this.species[species] ? this.species[species].getData() : null;
     }
 
     static getFrameForSpecies(species, growthStage) {
-        const speciesData = this.species[species];
+        const speciesData = this.getSpeciesData(species);
         if (!speciesData || !speciesData.frames[growthStage]) {
             console.error('Invalid species or growth stage:', species, growthStage);
             return 0;
@@ -83,3 +73,51 @@ class PlantSpecies {
         return speciesData.frames[growthStage];
     }
 }
+
+class PlantType {
+    constructor(name) {
+        this.name = name;
+        this.sun = {};
+        this.water = {};
+        this.frames = [];
+    }
+
+    setSunRange(min, max) {
+        this.sun = { min, max };
+        return this;
+    }
+
+    setWaterRange(min, max) {
+        this.water = { min, max };
+        return this;
+    }
+
+    setFrames(frames) {
+        this.frames = frames;
+        return this;
+    }
+
+    getData() {
+        return {
+            sun: this.sun,
+            water: this.water,
+            frames: this.frames,
+        };
+    }
+}
+
+// Define species with the new DSL
+PlantSpecies.defineSpecies('potato')
+    .setSunRange(25, 35)
+    .setWaterRange(20, 30)
+    .setFrames([0, 1, 2, 3]);
+
+PlantSpecies.defineSpecies('tomato')
+    .setSunRange(30, 40)
+    .setWaterRange(25, 35)
+    .setFrames([4, 5, 6, 7]);
+
+PlantSpecies.defineSpecies('eggplant')
+    .setSunRange(30, 40)
+    .setWaterRange(30, 40)
+    .setFrames([8, 9, 10, 11]);

@@ -1,0 +1,19 @@
+{
+    "scenarios": [
+      {
+        "name": "Scenario 1",
+        "startingConditions": {
+          "playerPosition": { "x": 100, "y": 100 },
+          "initialTurn": 1,
+          "actionsPerTurn": 10
+        },
+        "weatherPolicy": {
+          "sunlightRange": [20, 50],
+          "waterRange": [20, 50]
+        },
+        "victoryConditions": {
+          "harvestedPlantsCount": 30
+        }
+      }
+    ]
+  }

@@ -17,11 +17,15 @@ class Play extends Phaser.Scene {
     //Load characters
     this.load.atlas("pig", "pig.png", "pig.json");
 
+    // Load the scenario file
+    this.load.json('scenarioConfig', 'gameScenario.json');
+
     //Load plants
     this.load.spritesheet("plants", "plants.png", {
       frameWidth: 16,
       frameHeight: 16,
     });
+    
   }
 
   create() {
@@ -143,6 +147,23 @@ class Play extends Phaser.Scene {
         localStorage.removeItem('autoSave');
       }
     }
+    // Parse the scenario configuration
+    const scenarioConfig = this.cache.json.get('scenarioConfig');
+    const currentScenario = scenarioConfig.scenarios[0]; // For example, choosing the first scenario
+
+    // Apply starting conditions
+    this.currentTurn = currentScenario.startingConditions.initialTurn;
+    this.actionsPerTurn = currentScenario.startingConditions.actionsPerTurn;
+    this.player.setPosition(
+      currentScenario.startingConditions.playerPosition.x,
+      currentScenario.startingConditions.playerPosition.y
+    );
+
+    // Set up weather policy
+    this.weatherPolicy = currentScenario.weatherPolicy;
+
+    // Set up victory conditions
+    this.victoryConditions = currentScenario.victoryConditions;
   }
 
   createAnimations() {
@@ -337,6 +358,10 @@ class Play extends Phaser.Scene {
       this.harvestPlant(plant);
       this.actionTaken();
     }
+    if (!plant) {
+      console.error('No plant found at:', tileX, tileY);
+      return;
+    }
     // Record the action for undo
     this.recordGameState("harvest", { species: plant.species, tileX, tileY });
   }
@@ -529,11 +554,20 @@ class Play extends Phaser.Scene {
   }
 
   updateTileEnvironment() {
-    // random value for dirt layer - each tile
+    if (!this.weatherPolicy) {
+      console.error('Weather policy is not defined.');
+      return;
+    }
+  
     this.dirtLayer.forEachTile((tile) => {
-      // Directly modifying the custom properties of each tile
-      tile.properties.sunValue = Phaser.Math.Between(20, 50);
-      tile.properties.waterValue = Phaser.Math.Between(20, 50);
+      tile.properties.sunValue = Phaser.Math.Between(
+        this.weatherPolicy.sunlightRange[0], 
+        this.weatherPolicy.sunlightRange[1]
+      );
+      tile.properties.waterValue = Phaser.Math.Between(
+        this.weatherPolicy.waterRange[0], 
+        this.weatherPolicy.waterRange[1]
+      );
     });
   }
 
@@ -567,9 +601,14 @@ class Play extends Phaser.Scene {
     // Win condition counter
     this.harvestedPlantsCount++;
 
-    // Check if the player harvested 30 plants
-    if (this.harvestedPlantsCount === 30) {
-      window.alert("You harvested 30 random plants, haha~");
+    // Check victory condition
+    if (!this.victoryConditions) {
+      console.error('Victory conditions are not defined.');
+      return;
+    }
+  
+    if (this.harvestedPlantsCount === this.victoryConditions.harvestedPlantsCount) {
+      window.alert("Victory! You harvested the required number of plants.");
     }
   }
 
