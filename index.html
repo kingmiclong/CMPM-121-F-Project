@@ -7,6 +7,7 @@
     <title>Farming Prototype</title>
     <script src="lib/phaser.js"></script>
     <script src="src/prefabs/Plant.js"></script>
+    <script src="src/prefabs/Language.js"></script>
     <script src="src/scenes/Load.js"></script>
     <script src="src/scenes/Play.js"></script>
     <script src="src/main.js"></script>
@@ -16,12 +17,15 @@
       <p>Farming prototype</p>
     </header>
     <main>
-      <canvas id="gameCanvas"></canvas>
     </main>
     <footer>
       <p>Created by MicLong, NoComp, JustInTime 2023</p>
       <button id="saveGameButton">Save Game</button>
       <button id="loadGameButton">Load Game</button>
+      <button onclick="languageManager.loadLanguage('en')">English</button>
+      <button onclick="languageManager.loadLanguage('zh')">中文</button>
+      <button onclick="languageManager.loadLanguage('ja')">日本語</button>
+
     </footer>
   </body>
 </html>

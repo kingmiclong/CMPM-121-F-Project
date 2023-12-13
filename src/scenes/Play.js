@@ -25,6 +25,11 @@ class Play extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 16,
     });
+    
+     // Load language files
+     this.load.json('en', 'en.json');
+     this.load.json('zh', 'zh.json');
+     this.load.json('ja', 'ja.json');
   }
 
   create() {
@@ -46,16 +51,6 @@ class Play extends Phaser.Scene {
 
     // Set up collisions
     this.wallsLayer.setCollisionByProperty({ collides: true });
-
-    // Create text elements for turn number and action counter with corrected style
-    this.turnText = this.add.text(10, 10, "Turn: 1", {
-      fontSize: "16px",
-      color: "#FFFFFF",
-    });
-    this.actionText = this.add.text(10, 30, "Actions Left: 10", {
-      fontSize: "16px",
-      color: "#FFFFFF",
-    });
 
     // Create the pig sprite and add it to the scene
     this.player = this.physics.add.sprite(100, 100, "pig", "pig0.png");
@@ -165,7 +160,25 @@ class Play extends Phaser.Scene {
 
     // Set up victory conditions
     this.victoryConditions = currentScenario.victoryConditions;
+
+    // Initialize the text 
+    // @ts-ignore
+    window.languageManager.scene = this; // Set the current scene
+    this.initializeTexts();
   }
+
+  // Initialize the Text
+  initializeTexts() {
+    // Load the language file for the current language
+    // @ts-ignore
+    this.languageData = this.cache.json.get(window.languageManager.currentLanguage);
+
+    // Initialize your text elements
+    this.turnText = this.add.text(10, 10, '', { fontSize: '16px', color: '#FFFFFF' });
+    this.actionText = this.add.text(10, 30, '', { fontSize: '16px', color: '#FFFFFF' });
+
+    this.updateUI(); // Set their initial values
+}
 
   createAnimations() {
     // pig animation
@@ -519,13 +532,26 @@ class Play extends Phaser.Scene {
   }
 
   updateUI() {
-    // Update turn and action count display
-    this.turnText.setText("Turn: " + this.currentTurn);
-    this.actionText.setText(
-      "Actions Left: " + (this.actionsPerTurn - this.actionCount)
-    );
-  }
+    // Assuming window.languageManager.currentLanguage is set correctly
+    // and this.cache.json.get(...) retrieves the correct language data
+    // @ts-ignore
+    this.languageData = this.cache.json.get(window.languageManager.currentLanguage);
 
+    // Update Phaser UI elements
+    this.turnText.setText(`${this.languageData["Turn"]}: ${this.currentTurn}`);
+    this.actionText.setText(`${this.languageData["Action"]}: ${this.actionsPerTurn - this.actionCount}`);
+
+    // Update HTML button texts
+    document.getElementById('saveGameButton').innerText = this.languageData["Save"];
+    document.getElementById('loadGameButton').innerText = this.languageData["Load"];
+}
+
+  // Change Language
+  changeLanguage(newLanguage) {
+    this.currentLanguage = newLanguage;
+    this.languageData = this.cache.json.get(this.currentLanguage);
+    this.updateUI();
+  }
   // Action counting method
   actionTaken() {
     this.actionCount++;

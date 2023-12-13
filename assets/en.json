@@ -1,0 +1,8 @@
+{
+    "welcome": "Welcome to the Farm",
+    "instructions": "Use arrow keys to move, Q Plant, R Harvest, R for redo, T for undo.",
+    "Turn": "Turn",
+    "Action": "Actions Left",
+    "Save": "Save Game",
+    "Load": "Load Game"
+}
