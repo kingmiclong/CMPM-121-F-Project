@@ -532,8 +532,6 @@ class Play extends Phaser.Scene {
   }
 
   updateUI() {
-    // Assuming window.languageManager.currentLanguage is set correctly
-    // and this.cache.json.get(...) retrieves the correct language data
     // @ts-ignore
     this.languageData = this.cache.json.get(window.languageManager.currentLanguage);
 
