@@ -8,8 +8,6 @@ class Load extends Phaser.Scene {
     // Loads Graphic Assets
     this.load.image("tiles", "tiles.png");
     this.load.tilemapTiledJSON("Map", "gamemap.json");
-
-
   }
 
   create() {
