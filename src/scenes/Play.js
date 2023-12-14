@@ -740,6 +740,10 @@ class Play extends Phaser.Scene {
     localStorage.setItem("autoSave", JSON.stringify(gameState));
     console.log("Game auto-saved.");
   }
+  simulateKeyEvent(eventCode) {
+    const simulatedEvent = { code: eventCode };
+    this.handleMovementKeys(simulatedEvent);
+}
 
   // mobile button
   createMobileControls() {
@@ -751,10 +755,11 @@ class Play extends Phaser.Scene {
       this.createButton('redoButton', 350, 550, 'Redo', this.redoAction);
   
       // Arrow buttons for movement
-      this.createButton('leftButton', 50, 650, '<', () => this.movePlayer(-this.gridSize, 0));
-      this.createButton('rightButton', 150, 650, '>', () => this.movePlayer(this.gridSize, 0));
-      this.createButton('upButton', 100, 600, '^', () => this.movePlayer(0, -this.gridSize));
-      this.createButton('downButton', 100, 700, 'v', () => this.movePlayer(0, this.gridSize));
+      this.createButton('leftButton', 50, 650, '<', () => this.simulateKeyEvent('ArrowLeft'));
+      this.createButton('rightButton', 150, 650, '>', () => this.simulateKeyEvent('ArrowRight'));
+      this.createButton('upButton', 100, 600, '^', () => this.simulateKeyEvent('ArrowUp'));
+      this.createButton('downButton', 100, 700, 'v', () => this.simulateKeyEvent('ArrowDown'));
+
     }
   }
   
