@@ -748,24 +748,32 @@ class Play extends Phaser.Scene {
   // mobile button
   createMobileControls() {
     if (this.sys.game.device.os.android || this.sys.game.device.os.iOS) {
-      // Create buttons and position them on the screen
-      this.createButton('plantButton', 50, 550, 'Plant', this.plantAction);
-      this.createButton('harvestButton', 150, 550, 'Harvest', this.harvestAction);
-      this.createButton('undoButton', 250, 550, 'Undo', this.undoAction);
-      this.createButton('redoButton', 350, 550, 'Redo', this.redoAction);
+      const buttonWidth = 100; // Adjust as needed
+      const buttonHeight = 40; // Adjust as needed
+      const fontSize = '24px'; // Adjust as needed
+  
+      // Create action buttons and position them at the bottom
+      const baseY = 400; // Position Y for action buttons
+      this.createButton('plantButton', 10, baseY, 'Plant', this.plantAction, buttonWidth, buttonHeight, fontSize);
+      this.createButton('harvestButton', 120, baseY, 'Harvest', this.harvestAction, buttonWidth, buttonHeight, fontSize);
+      this.createButton('undoButton', 230, baseY, 'Undo', this.undoAction, buttonWidth, buttonHeight, fontSize);
+      this.createButton('redoButton', 340, baseY, 'Redo', this.redoAction, buttonWidth, buttonHeight, fontSize);
   
       // Arrow buttons for movement
-      this.createButton('leftButton', 50, 650, '<', () => this.simulateKeyEvent('ArrowLeft'));
-      this.createButton('rightButton', 150, 650, '>', () => this.simulateKeyEvent('ArrowRight'));
-      this.createButton('upButton', 100, 600, '^', () => this.simulateKeyEvent('ArrowUp'));
-      this.createButton('downButton', 100, 700, 'v', () => this.simulateKeyEvent('ArrowDown'));
-
+      const arrowBaseX = 450; // Base X position for arrow buttons
+      const arrowBaseY = 360; // Base Y position for arrow buttons
+      const arrowButtonSize = 35; // Size of arrow buttons
+      this.createButton('leftButton', arrowBaseX - arrowButtonSize, arrowBaseY, '<', () => this.simulateKeyEvent('ArrowLeft'), arrowButtonSize, arrowButtonSize, '20px');
+      this.createButton('rightButton', arrowBaseX + arrowButtonSize, arrowBaseY, '>', () => this.simulateKeyEvent('ArrowRight'), arrowButtonSize, arrowButtonSize, '20px');
+      this.createButton('upButton', arrowBaseX, arrowBaseY - arrowButtonSize, '^', () => this.simulateKeyEvent('ArrowUp'), arrowButtonSize, arrowButtonSize, '20px');
+      this.createButton('downButton', arrowBaseX, arrowBaseY + arrowButtonSize, 'v', () => this.simulateKeyEvent('ArrowDown'), arrowButtonSize, arrowButtonSize, '20px');
     }
   }
   
-  createButton(key, x, y, text, action) {
-    let button = this.add.text(x, y, text, { font: '16px Arial', color: '#ffffff' })
-    .setInteractive()
-    .on('pointerdown', action.bind(this));
+  createButton(key, x, y, text, action, width, height, fontSize) {
+    let button = this.add.text(x, y, text, { font: `${fontSize} Arial`, color: '#ffffff', backgroundColor: '#000000', padding: { x: 10, y: 5 }, align: 'center' })
+      .setFixedSize(width, height)
+      .setInteractive()
+      .on('pointerdown', action.bind(this));
   }
 }
