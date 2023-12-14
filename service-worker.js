@@ -7,7 +7,7 @@ self.addEventListener('install', (event) => {
           '/',
           '/index.html',
           '/main.js',
-          
+
           '/assets/en.json',
           '/assets/ja.json',
           '/assets/zh.json',
@@ -26,8 +26,6 @@ self.addEventListener('install', (event) => {
 
           '/src/scenes/Load.js',
           '/src/scenes/Play.js',
-
-          // other assets like CSS, JavaScript, images, etc.
         ]);
       })
     );

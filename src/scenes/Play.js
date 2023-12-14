@@ -84,6 +84,9 @@ class Play extends Phaser.Scene {
     // Prevents diagonal movement and allows for grid-based movement
     this.input.keyboard.on("keydown", this.handleKeyDown, this);
 
+    // Create mobile controls if on a mobile device
+    this.createMobileControls();
+
     // Define new Keyboard Inputs for planting and harvesting
     this.keys = {
       plant: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q),
@@ -736,5 +739,28 @@ class Play extends Phaser.Scene {
     const gameState = this.createCurrentGameState();
     localStorage.setItem("autoSave", JSON.stringify(gameState));
     console.log("Game auto-saved.");
+  }
+
+  // mobile button
+  createMobileControls() {
+    if (this.sys.game.device.os.android || this.sys.game.device.os.iOS) {
+      // Create buttons and position them on the screen
+      this.createButton('plantButton', 50, 550, 'Plant', this.plantAction);
+      this.createButton('harvestButton', 150, 550, 'Harvest', this.harvestAction);
+      this.createButton('undoButton', 250, 550, 'Undo', this.undoAction);
+      this.createButton('redoButton', 350, 550, 'Redo', this.redoAction);
+  
+      // Arrow buttons for movement
+      this.createButton('leftButton', 50, 650, '<', () => this.movePlayer(-this.gridSize, 0));
+      this.createButton('rightButton', 150, 650, '>', () => this.movePlayer(this.gridSize, 0));
+      this.createButton('upButton', 100, 600, '^', () => this.movePlayer(0, -this.gridSize));
+      this.createButton('downButton', 100, 700, 'v', () => this.movePlayer(0, this.gridSize));
+    }
+  }
+  
+  createButton(key, x, y, text, action) {
+    let button = this.add.text(x, y, text, { font: '16px Arial', color: '#ffffff' })
+    .setInteractive()
+    .on('pointerdown', action.bind(this));
   }
 }
