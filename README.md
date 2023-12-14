@@ -120,3 +120,112 @@ PlantSpecies.defineSpecies('eggplant')
 
 ## Reflection
 After working on the F2 requirements, and doing a bit of refactoring to adjust to the new changes, we've realized that now might be a good time to try and add some more player feedback. While the deadline is tight and we're a small group, we have visions of adding more features that make the game more easy to follow. We talked about adding progress bars for plant growth, picking of different seed types instead of random planting, visualization of the task progress for finishing the game, and much more. Everyone seems settled into their roles and things are going well.
+
+# Devlog Entry - [12/13/2023]
+
+### F0+F1+F2
+
+No major changes made from F0,F1, or F2
+
+### Internationalization.
+To include internationalization, we preloaded the following language files
+this.load.json('en', 'en.json');
+this.load.json('zh', 'zh.json');
+this.load.json('ja', 'ja.json');
+Then we initialize the text elements using intitializeTexts() and updated them in the updateUI method,  which are  associated  with specific  keys from  the language files
+ initializeTexts() {
+    // Load the language file for the current language
+    // @ts-ignore
+    this.languageData = this.cache.json.get(window.languageManager.currentLanguage);
+The player can always  change  languages anytime throughout the game. We used the changeLanguage() method to do so
+changeLanguage(newLanguage) {
+    this.currentLanguage = newLanguage;
+    this.languageData = this.cache.json.get(this.currentLanguage);
+    this.updateUI();
+}
+
+### Localization
+
+We support 3 languages: English, Japanese, and Chinese. 
+
+There is an in-game language selection where users access the language settings through the game's menu or options screen. Within the settings, there is an option to choose the desired language. The game uses a language manager or a similar component to handle language-related functionality. When the user selects a language, the language manager dynamically loads the corresponding language file (e.g., 'en.json' for English, 'zh.json' for Chinese) containing all the translated strings. As soon as the player selects a different language, the game's UI elements, texts, and notifications are updated in real-time to reflect the chosen language. This allows players to switch between languages seamlessly during gameplay without the need to restart the game.
+
+### Mobile Installation
+
+To get our game to be installable on a smartphone, we created a manifest file and a service worker.
+This is the manifest file:
+{
+    "name": "Farming Prototype",
+    "short_name": "FarmGame",
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "icons": [
+      {
+        "src": "assets/pigicon192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "assets/pigicon512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    
+    ]
+  }
+The service worker:
+/// <reference lib="WebWorker" />
+
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+      caches.open('game-cache').then((cache) => {
+        return cache.addAll([
+          './',
+          './index.html',
+          './main.js',
+
+          './assets/en.json',
+          './assets/ja.json',
+          './assets/zh.json',
+          './assets/gamemap.json',
+          './assets/gamemap.png',
+          './assets/gamemap.tmx',
+          './assets/plants.json',
+          './assets/plants.png',
+          './assets/tiles.png',
+          './assets/pig.png',
+          './assets/pig.json',
+          './assets/gameScenario.json',
+          
+          './src/prefabs/Language.js',
+          './src/prefabs/Plant.js',
+          
+          './lib/phaser.js',
+          './src/scenes/Load.js',
+          './src/scenes/Play.js',
+        ]);
+      })
+    );
+});
+
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request);
+      })
+    );
+});
+
+
+
+### Mobile Play (Offline)
+
+To make this game accessible for mobile platforms, we tweaked the controls and UI to adapt to them. Custom mobile buttons were designed and positioned for actions such as planting, harvesting, undo, redo, and movement. The UI was adapted for smaller screens, ensuring readability and accessibility. Font sizes, button dimensions, and layout were adjusted for an optimal mobile display.
+
+For offline play, we opted to use local storage so that players could resume their game without the internet. The ability to load game states from a JSON file provides players with a way to resume their game on a different device or share progress.
+
+## Reflection
+Optimizing our game for mobile devices and enabling offline play presented challenges, but with careful consideration and testing, we've created a seamless and enjoyable gaming experience for players on the go. The combination of responsive controls, performance optimizations, and offline support ensures that our game can be enjoyed anytime, anywhere. Taking into account the added language support, we successfully made the game more accessible to players not just on different platforms, but for different player bases as well.
