@@ -27,6 +27,7 @@ const ASSETS = {
 };
 
 function addToCache(cache, assets) {
+  console.log("Caching assets:", assets);
   return cache.addAll(assets).catch((error) => {
     console.error("Failed to add assets to cache", error);
   });
