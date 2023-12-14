@@ -1,7 +1,7 @@
 /// <reference lib="WebWorker" />
 
 const ASSETS = {
-  html: ["./", "./index.html", "./offline.html"],
+  html: ["./", "./index.html", "./offline.html",],
   js: [
     "./main.js",
     "./lib/phaser.js",
