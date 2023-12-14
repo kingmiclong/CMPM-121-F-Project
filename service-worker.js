@@ -23,7 +23,8 @@ self.addEventListener('install', (event) => {
           
           '/src/prefabs/Language.js',
           '/src/prefabs/Plant.js',
-
+          
+          '/lib/phaser.js',
           '/src/scenes/Load.js',
           '/src/scenes/Play.js',
         ]);
