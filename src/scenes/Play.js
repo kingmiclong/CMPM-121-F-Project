@@ -748,21 +748,21 @@ class Play extends Phaser.Scene {
   // mobile button
   createMobileControls() {
     if (this.sys.game.device.os.android || this.sys.game.device.os.iOS) {
-      const buttonWidth = 100; // Adjust as needed
-      const buttonHeight = 40; // Adjust as needed
-      const fontSize = '24px'; // Adjust as needed
+      const buttonWidth = 100; 
+      const buttonHeight = 40; 
+      const fontSize = '24px'; 
   
       // Create action buttons and position them at the bottom
-      const baseY = 400; // Position Y for action buttons
+      const baseY = 300; 
       this.createButton('plantButton', 10, baseY, 'Plant', this.plantAction, buttonWidth, buttonHeight, fontSize);
       this.createButton('harvestButton', 120, baseY, 'Harvest', this.harvestAction, buttonWidth, buttonHeight, fontSize);
       this.createButton('undoButton', 230, baseY, 'Undo', this.undoAction, buttonWidth, buttonHeight, fontSize);
       this.createButton('redoButton', 340, baseY, 'Redo', this.redoAction, buttonWidth, buttonHeight, fontSize);
   
       // Arrow buttons for movement
-      const arrowBaseX = 450; // Base X position for arrow buttons
-      const arrowBaseY = 360; // Base Y position for arrow buttons
-      const arrowButtonSize = 35; // Size of arrow buttons
+      const arrowBaseX = 450; 
+      const arrowBaseY = 260; 
+      const arrowButtonSize = 35; 
       this.createButton('leftButton', arrowBaseX - arrowButtonSize, arrowBaseY, '<', () => this.simulateKeyEvent('ArrowLeft'), arrowButtonSize, arrowButtonSize, '20px');
       this.createButton('rightButton', arrowBaseX + arrowButtonSize, arrowBaseY, '>', () => this.simulateKeyEvent('ArrowRight'), arrowButtonSize, arrowButtonSize, '20px');
       this.createButton('upButton', arrowBaseX, arrowBaseY - arrowButtonSize, '^', () => this.simulateKeyEvent('ArrowUp'), arrowButtonSize, arrowButtonSize, '20px');
