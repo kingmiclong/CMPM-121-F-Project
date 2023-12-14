@@ -545,8 +545,23 @@ class Play extends Phaser.Scene {
     // Update HTML button texts
     document.getElementById('saveGameButton').innerText = this.languageData["Save"];
     document.getElementById('loadGameButton').innerText = this.languageData["Load"];
-}
 
+    // Check if it's a mobile device and update control button texts if necessary
+    if (this.sys.game.device.os.android || this.sys.game.device.os.iOS) {
+      // Assuming you have a method to get the Phaser text objects for buttons
+      this.updateMobileControlText('plantButton', this.languageData["Plant"]);
+      this.updateMobileControlText('harvestButton', this.languageData["Harvest"]);
+      this.updateMobileControlText('undoButton', this.languageData["Undo"]);
+      this.updateMobileControlText('redoButton', this.languageData["Redo"]);
+    }
+  }
+
+  updateMobileControlText(buttonKey, newText) {
+    const button = this[buttonKey]; // Accessing the Phaser text object for the button
+    if (button) {
+        button.setText(newText);
+    }
+  }
   // Change Language
   changeLanguage(newLanguage) {
     this.currentLanguage = newLanguage;
@@ -772,8 +787,10 @@ class Play extends Phaser.Scene {
   
   createButton(key, x, y, text, action, width, height, fontSize) {
     let button = this.add.text(x, y, text, { font: `${fontSize} Arial`, color: '#ffffff', backgroundColor: '#000000', padding: { x: 10, y: 5 }, align: 'center' })
-      .setFixedSize(width, height)
-      .setInteractive()
-      .on('pointerdown', action.bind(this));
-  }
+        .setFixedSize(width, height)
+        .setInteractive()
+        .on('pointerdown', action.bind(this));
+
+    this[key] = button; // Store the button in the scene with its key
+}
 }

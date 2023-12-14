@@ -4,5 +4,9 @@
     "Turn": "Turn",
     "Action": "Actions Left",
     "Save": "Save Game",
-    "Load": "Load Game"
+    "Load": "Load Game",
+    "Plant": "Plant",
+    "Harvest": "Harvest",
+    "Redo": "Redo",
+    "Undo": "Undo"
 }
