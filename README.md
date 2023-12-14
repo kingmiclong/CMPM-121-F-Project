@@ -120,3 +120,32 @@ PlantSpecies.defineSpecies('eggplant')
 
 ## Reflection
 After working on the F2 requirements, and doing a bit of refactoring to adjust to the new changes, we've realized that now might be a good time to try and add some more player feedback. While the deadline is tight and we're a small group, we have visions of adding more features that make the game more easy to follow. We talked about adding progress bars for plant growth, picking of different seed types instead of random planting, visualization of the task progress for finishing the game, and much more. Everyone seems settled into their roles and things are going well.
+
+# Devlog Entry - [12/12/2023]
+
+### F0+F1+F2
+
+No major changes made from F0,F1, or F2
+
+### Internationalization.
+To include internationalization, we preloaded the following language files
+this.load.json('en', 'en.json');
+this.load.json('zh', 'zh.json');
+this.load.json('ja', 'ja.json');
+Then we initialize the text elements using intitializeTexts() and updated them in the updateUI method,  which are  associated  with specific  keys from  the language files
+ initializeTexts() {
+    // Load the language file for the current language
+    // @ts-ignore
+    this.languageData = this.cache.json.get(window.languageManager.currentLanguage);
+The player can always  change  languages anytime throughout the game. We used the changeLanguage() method to do so
+changeLanguage(newLanguage) {
+    this.currentLanguage = newLanguage;
+    this.languageData = this.cache.json.get(this.currentLanguage);
+    this.updateUI();
+}
+
+### Localization
+
+We support 3 languages: English, Japanese, and Chinese. 
+
+There is an in-game language selection where users access the language settings through the game's menu or options screen. Within the settings, there is an option to choose the desired language. The game uses a language manager or a similar component to handle language-related functionality. When the user selects a language, the language manager dynamically loads the corresponding language file (e.g., 'en.json' for English, 'zh.json' for Chinese) containing all the translated strings. As soon as the player selects a different language, the game's UI elements, texts, and notifications are updated in real-time to reflect the chosen language. This allows players to switch between languages seamlessly during gameplay without the need to restart the game.
